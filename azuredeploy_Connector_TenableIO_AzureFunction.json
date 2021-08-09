@@ -26,13 +26,6 @@
         "tenableExportScheduleInMinutes": {
             "type": "int",
             "defaultValue": 1440
-        },
-        "location": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().location]",
-            "metadata": {
-                "description": "The location in which the resources should be deployed."
-            }
         }
     },
     "variables": {
@@ -167,20 +160,11 @@
                         "TIO_SECRET_KEY": "[parameters('tenableSecretKey')]",
                         "TIO_ACCESS_KEY": "[parameters('tenableAccessKey')]",
                         "TenableExportScheduleInMinutes": "[parameters('tenableExportScheduleInMinutes')]",
-                        "TenableExportPollScheduleInMinutes": "1",
-                        "TenableCleanupScheduleInMinutes": "10",
-                        "TenableExportStatsTable": "TenableExportStatsTable",
-                        "TenableAssetExportQueue": "tenable-asset-export-queue",
-                        "TenableAssetExportFailureQueue": "tenable-asset-export-queue-poison",
-                        "TenableVulnExportQueue": "tenable-vuln-export-queue",
-                        "TenableVulnExportFailureQueue": "tenable-vuln-export-queue-poison",
-                        "TenableAssetExportTable": "TenableAssetExportTable",
-                        "TenableVulnExportTable": "TenableVulnExportTable",
                         "PyTenableUAVendor": "Microsoft",
                         "PyTenableUAProduct": "Azure Sentinel",
                         "PyTenableUABuild": "0.0.1",
                         "logAnalyticsUri": "[variables('LogAnaltyicsUri')]",
-                        "WEBSITE_RUN_FROM_PACKAGE": "https://aka.ms/sentinel-nessusvm-functionapp"
+                        "WEBSITE_RUN_FROM_PACKAGE": "https://aka.ms/sentinel-tenable-functionapp"
                     }
                 }
             ]
