@@ -1,12 +1,11 @@
 import logging
 import os
 
-from ..exports_store import ExportsTableStore
-from ..exports_queue import ExportsQueue
+from ..exports_store import ExportsTableStore, ExportsTableNames
 
 connection_string = os.environ['AzureWebJobsStorage']
-assets_export_table_name = os.environ['TenableAssetExportTable']
-vuln_export_table_name = os.environ['TenableVulnExportTable']
+assets_export_table_name = ExportsTableNames.TenableAssetExportTable.value
+vuln_export_table_name = ExportsTableNames.TenableVulnExportTable.value
 
 
 def remove_finished_chunks(table_client: ExportsTableStore):

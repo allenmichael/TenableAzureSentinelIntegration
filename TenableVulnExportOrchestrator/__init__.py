@@ -7,7 +7,7 @@ import azure.functions as func
 import azure.durable_functions as df
 
 vuln_status_and_chunk = 'TenableVulnExportStatusAndSendChunks'
-export_poll_schedule_minutes = int(os.environ['TenableExportPollScheduleInMinutes']) if 'TenableExportPollScheduleInMinutes' in os.environ else 1
+export_poll_schedule_minutes = int(os.getenv('TenableExportPollScheduleInMinutes', '1'))
 
 
 def orchestrator_function(context: df.DurableOrchestrationContext):

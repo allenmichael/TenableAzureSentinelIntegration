@@ -6,7 +6,7 @@ import azure.durable_functions as df
 
 generate_stats_activity_name = 'TenableGenerateJobStats'
 clean_tables_name = 'TenableCleanTables'
-cleanup_schedule_minutes = int(os.environ['TenableCleanupScheduleInMinutes']) if 'TenableCleanupScheduleInMinutes' in os.environ else 10
+cleanup_schedule_minutes = int(os.getenv('TenableCleanupScheduleInMinutes', '10'))
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     yield context.call_activity(generate_stats_activity_name, '')

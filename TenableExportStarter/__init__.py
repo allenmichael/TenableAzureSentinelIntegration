@@ -1,18 +1,18 @@
 import logging
 import os
 from datetime import datetime, timedelta, timezone
-from ..exports_store import ExportsTableStore
-from ..exports_queue import ExportsQueue
+from ..exports_store import ExportsTableStore, ExportsTableNames
+from ..exports_queue import ExportsQueue, ExportsQueueNames
 
 import azure.functions as func
 import azure.durable_functions as df
 
 connection_string = os.environ['AzureWebJobsStorage']
-stats_table_name = os.environ['TenableExportStatsTable']
-assets_export_table_name = os.environ['TenableAssetExportTable']
-vuln_export_table_name = os.environ['TenableVulnExportTable']
-assets_queue_name = os.environ['TenableAssetExportQueue']
-vuln_queue_name = os.environ['TenableVulnExportQueue']
+stats_table_name = ExportsTableNames.TenableExportStatsTable.value
+assets_export_table_name = ExportsTableNames.TenableAssetExportTable.value
+vuln_export_table_name = ExportsTableNames.TenableVulnExportTable.value
+assets_queue_name = ExportsQueueNames.TenableAssetExportsQueue.value
+vuln_queue_name = ExportsQueueNames.TenableVulnExportsQueue.value
 
 orchestrator_function_name = 'TenableExportsOrchestrator'
 cleanup_orchestrator_function_name = 'TenableCleanUpOrchestrator'

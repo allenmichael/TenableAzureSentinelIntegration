@@ -3,15 +3,12 @@ import os
 from datetime import datetime, timedelta
 from tenable_helper import TenableStatus
 
-from ..exports_store import ExportsTableStore
-from ..exports_queue import ExportsQueue
+from ..exports_store import ExportsTableStore, ExportsTableNames
 
 connection_string = os.environ['AzureWebJobsStorage']
-stats_table_name = os.environ['TenableExportStatsTable']
-assets_export_table_name = os.environ['TenableAssetExportTable']
-vuln_export_table_name = os.environ['TenableVulnExportTable']
-assets_queue_name = os.environ['TenableAssetExportQueue']
-vuln_queue_name = os.environ['TenableVulnExportQueue']
+stats_table_name = ExportsTableNames.TenableExportStatsTable.value
+assets_export_table_name = ExportsTableNames.TenableAssetExportTable.value
+vuln_export_table_name = ExportsTableNames.TenableVulnExportTable.value
 
 
 def generate_finished_stats(table_client: ExportsTableStore, stats_table: ExportsTableStore):

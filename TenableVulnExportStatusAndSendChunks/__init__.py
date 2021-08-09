@@ -1,25 +1,21 @@
 import logging
 import os
 
-from ..exports_store import ExportsTableStore
-from ..exports_queue import ExportsQueue
+from ..exports_store import ExportsTableStore, ExportsTableNames
+from ..exports_queue import ExportsQueue, ExportsQueueNames
 
-from ..tenable_helper import get_vuln_export_url, TenableStatus, TenableExportType
-from tenable.io import TenableIO
+from ..tenable_helper import TenableIO, TenableStatus, TenableExportType
+# from tenable.io import TenableIO
 
 connection_string = os.environ['AzureWebJobsStorage']
-vuln_export_table_name = os.environ['TenableVulnExportTable']
-vuln_queue_name = os.environ['TenableVulnExportQueue']
+vuln_export_table_name = ExportsTableNames.TenableVulnExportTable.value
+vuln_queue_name = ExportsQueueNames.TenableVulnExportsQueue.value
 
-vendor = os.environ['PyTenableUAVendor'] if 'PyTenableUAVendor' in os.environ else 'Microsoft'
-product = os.environ['PyTenableUAProduct'] if 'PyTenableUAProduct' in os.environ else 'Azure Sentinel'
-build = os.environ['PyTenableUABuild'] if 'PyTenableUABuild' in os.environ else '0.0.1'
 
 def send_chunks_to_queue(exportJobDetails):
     logging.info(f'Sending chunk to queue.')
-    chunks = exportJobDetails['chunks_available'] if 'chunks_available' in exportJobDetails else [
-    ]
-    exportJobId = exportJobDetails['exportJobId'] if 'exportJobId' in exportJobDetails else ''
+    chunks = exportJobDetails.get('chunks_available', [])
+    exportJobId = exportJobDetails.get('exportJobId', '')
 
     if len(chunks) > 0:
         vuln_table = ExportsTableStore(
@@ -51,16 +47,15 @@ def send_chunks_to_queue(exportJobDetails):
 def main(exportJobId: str) -> object:
     logging.info('using pyTenable client to check asset export job status')
     logging.info(
-        f'checking status at {get_vuln_export_url()}/{exportJobId}/status')
-    tio = TenableIO(vendor=vendor, product=product, build=build)
-    r = tio.get(f'{get_vuln_export_url()}/{exportJobId}/status')
+        f'checking status at vulns/{exportJobId}/status')
+    tio = TenableIO()
+    job_details = tio.exports.status('vulns', exportJobId)
+    # r = tio.get(f'{get_vuln_export_url()}/{exportJobId}/status')
     logging.info(
-        f'received a response from {get_vuln_export_url()}/{exportJobId}/status')
-    logging.info(r.text)
-    logging.info(r.json())
+        f'received a response from vulns/{exportJobId}/status')
+    logging.info(job_details)
 
     try:
-        job_details = r.json()
         job_details['exportJobId'] = exportJobId
         send_chunks_to_queue(job_details)
     except Exception as e:
@@ -68,4 +63,4 @@ def main(exportJobId: str) -> object:
         logging.warn(job_details)
         logging.warn(e)
 
-    return r.json()
+    return job_details

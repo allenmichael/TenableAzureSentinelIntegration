@@ -1,5 +1,6 @@
 import logging
 
+from enum import Enum
 from azure.data.tables import TableClient, UpdateMode
 from azure.core.exceptions import ResourceNotFoundError, ResourceExistsError, HttpResponseError
 from .tenable_helper import TenableStatus
@@ -52,6 +53,10 @@ class ExportsTableStore:
             if data is not None:
                 entity_template.update(data)
             return table_client.upsert_entity(mode=UpdateMode.REPLACE, entity=entity_template)
+
+    def update_if_found(self, pk: str, rk: str, data: dict = None):
+        if self.get(pk, rk) is not None:
+            self.merge(pk, rk, data)
 
     def query_by_partition_key(self, pk):
         table_client = TableClient.from_connection_string(
@@ -156,3 +161,9 @@ class ExportsTableStore:
             if data is not None:
                 entity_template.update(data)
             return table_client.upsert_entity(mode=UpdateMode.MERGE, entity=entity_template)
+
+
+class ExportsTableNames(Enum):
+    TenableExportStatsTable = "TenableExportStatsTable"
+    TenableAssetExportTable = "TenableAssetExportTable"
+    TenableVulnExportTable = "TenableVulnExportTable"

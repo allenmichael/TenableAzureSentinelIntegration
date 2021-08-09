@@ -1,5 +1,6 @@
 import logging
 import json
+from enum import Enum
 
 from azure.storage.queue import QueueClient, BinaryBase64EncodePolicy, BinaryBase64DecodePolicy
 from azure.core.exceptions import ResourceNotFoundError, ResourceExistsError
@@ -25,3 +26,9 @@ class ExportsQueue:
                                                 message_decode_policy=BinaryBase64DecodePolicy()) as queue_client:
             chunk_info = {'exportJobId': export_job_id, 'chunkId': chunk_id}
             return queue_client.send_message(json.dumps(chunk_info).encode('utf-8'))
+
+class ExportsQueueNames(Enum):
+    TenableAssetExportsQueue = 'tenable-asset-export-queue'
+    TenableVulnExportsQueue = 'tenable-vuln-export-queue'
+    TenableAssetExportsPoisonQueue = 'tenable-asset-export-queue-poison'
+    TenableVulnExportsPoisonQueue = 'tenable-vuln-export-queue-poison'

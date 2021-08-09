@@ -1,13 +1,13 @@
 import logging
 import os
 import json
-from ..exports_store import ExportsTableStore
+from ..exports_store import ExportsTableStore, ExportsTableNames
 from ..tenable_helper import TenableStatus
 
 import azure.functions as func
 
 connection_string = os.environ['AzureWebJobsStorage']
-vuln_table_name = os.environ['TenableVulnExportTable']
+vuln_table_name = ExportsTableNames.TenableVulnExportTable.value
 
 
 def main(msg: func.QueueMessage) -> None:

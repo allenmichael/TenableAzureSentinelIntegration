@@ -10,7 +10,7 @@ logger = logging.getLogger("azure.core.pipeline.policies.http_logging_policy")
 logger.setLevel(logging.WARNING)
 
 asset_status_and_chunk = 'TenableAssetExportStatusAndSendChunks'
-export_poll_schedule_minutes = int(os.environ['TenableExportPollScheduleInMinutes']) if 'TenableExportPollScheduleInMinutes' in os.environ else 1
+export_poll_schedule_minutes = int(os.getenv('TenableExportPollScheduleInMinutes', '1'))
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     logging.info('started asset export orchestrator')

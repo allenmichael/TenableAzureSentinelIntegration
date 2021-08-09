@@ -5,12 +5,13 @@ from datetime import timedelta, datetime, timezone
 import azure.functions as func
 import azure.durable_functions as df
 
-from ..exports_store import ExportsTableStore
+from ..exports_store import ExportsTableStore, ExportsTableNames
 from ..tenable_helper import TenableStatus, TenableExportType
 
 connection_string = os.environ['AzureWebJobsStorage']
-stats_table_name = os.environ['TenableExportStatsTable']
-export_schedule_minutes = int(os.environ['TenableExportScheduleInMinutes']) if 'TenableExportScheduleInMinutes' in os.environ else 1440
+stats_table_name = ExportsTableNames.TenableExportStatsTable.value
+export_schedule_minutes = int(
+    os.getenv('TenableExportScheduleInMinutes', '1440'))
 start_asset_job_name = 'TenableStartAssetExportJob'
 start_vuln_job_name = 'TenableStartVulnExportJob'
 asset_orchestrator_name = 'TenableAssetExportOrchestrator'
@@ -32,8 +33,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     stats_store = ExportsTableStore(connection_string, stats_table_name)
 
-    asset_export_job = yield context.call_activity(start_asset_job_name, filter_by_time)
-    asset_export_job_id = asset_export_job['export_uuid']
+    asset_export_job_id = yield context.call_activity(start_asset_job_name, filter_by_time)
     logging.info('retrieved a new asset job ID')
     logging.warn(
         f'instance id: f{context.instance_id} working with asset export job {asset_export_job_id}, sending to sub orchestrator')
@@ -50,8 +50,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     logging.info(
         f'saved {asset_export_job_id} to stats table. moving to start vuln job.')
 
-    vuln_export_job = yield context.call_activity(start_vuln_job_name, filter_by_time)
-    vuln_export_job_id = vuln_export_job['export_uuid']
+    vuln_export_job_id = yield context.call_activity(start_vuln_job_name, filter_by_time)
     logging.info('retrieved a new vuln job ID')
     logging.warn(
         f'instance id: f{context.instance_id} working with vuln export job {vuln_export_job_id}, sending to sub orchestrator')
@@ -120,7 +119,8 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         logging.warn('vuln job returned no results')
         logging.warn(e)
 
-    next_check = context.current_utc_datetime + timedelta(minutes=export_schedule_minutes)
+    next_check = context.current_utc_datetime + \
+        timedelta(minutes=export_schedule_minutes)
     yield context.create_timer(next_check)
     context.continue_as_new(None)
 

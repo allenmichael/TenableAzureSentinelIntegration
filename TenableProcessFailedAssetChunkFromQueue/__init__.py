@@ -1,13 +1,13 @@
 import logging
 import os
 import json
-from ..exports_store import ExportsTableStore
+from ..exports_store import ExportsTableStore, ExportsTableNames
 from ..tenable_helper import TenableStatus
 
 import azure.functions as func
 
 connection_string = os.environ['AzureWebJobsStorage']
-assets_table_name = os.environ['TenableAssetExportTable']
+assets_table_name = ExportsTableNames.TenableAssetExportTable.value
 
 
 def main(msg: func.QueueMessage) -> None:

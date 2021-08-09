@@ -10,16 +10,16 @@ from datetime import datetime
 class AzureSentinel:
 
     def __init__(self, workspace_id, workspace_key, log_type, log_analytics_url=''):
-        self.workspace_id = workspace_id
-        self.workspace_key = workspace_key
-        self.log_type = log_type
+        self._workspace_id = workspace_id
+        self._workspace_key = workspace_key
+        self._log_type = log_type
         if ((log_analytics_url in (None, '') or str(log_analytics_url).isspace())):
-            log_analytics_url = 'https://' + self.workspace_id + '.ods.opinsights.azure.com'
+            log_analytics_url = 'https://' + self._workspace_id + '.ods.opinsights.azure.com'
+
         pattern = r"https:\/\/([\w\-]+)\.ods\.opinsights\.azure.([a-zA-Z\.]+)$"
-        match = re.match(pattern, str(log_analytics_url))
-        if(not match):
+        if not re.match(pattern, str(log_analytics_url)):
             raise Exception("Invalid Log Analytics Uri.")
-        self.log_analytics_url = log_analytics_url
+        self._log_analytics_url = log_analytics_url
 
     def build_signature(self, date, content_length, method, content_type, resource):
         x_headers = 'x-ms-date:' + date
@@ -27,11 +27,11 @@ class AzureSentinel:
             str(content_length) + "\n" + content_type + \
             "\n" + x_headers + "\n" + resource
         bytes_to_hash = bytes(string_to_hash, encoding="utf-8")
-        decoded_key = base64.b64decode(self.workspace_key)
+        decoded_key = base64.b64decode(self._workspace_key)
         encoded_hash = base64.b64encode(hmac.new(
             decoded_key, bytes_to_hash, digestmod=hashlib.sha256).digest()).decode()
         authorization = "SharedKey {}:{}".format(
-            self.workspace_id, encoded_hash)
+            self._workspace_id, encoded_hash)
         return authorization
 
     def post_data(self, body):
@@ -45,11 +45,11 @@ class AzureSentinel:
         signature = self.build_signature(
             rfc1123date, content_length, method, content_type, resource)
         logging.info('signature built.')
-        uri = self.log_analytics_url + resource + '?api-version=2016-04-01'
+        uri = self._log_analytics_url + resource + '?api-version=2016-04-01'
         headers = {
             'content-type': content_type,
             'Authorization': signature,
-            'Log-Type': self.log_type,
+            'Log-Type': self._log_type,
             'x-ms-date': rfc1123date
         }
         logging.info('sending post to Azure Sentinel.')
@@ -60,4 +60,5 @@ class AzureSentinel:
         else:
             logging.warn("Events are not processed into Azure. Response code: {}".format(
                 response.status_code))
-            return None
+            raise Exception(
+                        f'Sending to Azure Sentinel failed with status code {response.status_code}')

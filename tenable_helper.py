@@ -1,25 +1,37 @@
+from tenable.io import TenableIO as BaseIO
+from tenable.io.exports import ExportsAPI
 from enum import Enum
+import os
 
-base_url = 'https://cloud.tenable.com'
-asset_base_url = 'assets'
-asset_export_url = f'{asset_base_url}/export'
-vuln_base_url = 'vulns'
-vuln_export_url = f'{vuln_base_url}/export'
+class ExportsAPIExtended(ExportsAPI):
+    def vulns(self, **kwargs) -> str:
+        return super().vulns(**kwargs).uuid
 
-def get_base_url():
-    return base_url
+    def assets(self, **kwargs) -> str:
+        return super().assets(**kwargs).uuid
 
-def get_asset_base_url():
-    return asset_base_url
+    def status(self, export_type: str, uuid: str) -> dict:
+        return self._api.get(
+            f'{export_type}/export/{uuid}/status'
+        ).json()
 
-def get_asset_export_url():
-    return asset_export_url
+    def chunk(self, export_type: str, uuid: str, chunk: int) -> list:
+        return self._api.get(
+            f'{export_type}/export/{uuid}/chunks/{chunk}'
+        ).json()
 
-def get_vuln_base_url():
-    return vuln_base_url
 
-def get_vuln_export_url():
-    return vuln_export_url
+class TenableIO(BaseIO):
+    def __init__(self, **kwargs):
+        kwargs['vendor'] = os.getenv('PyTenableUAVendor', 'Microsoft')
+        kwargs['product'] = os.getenv('PyTenableUAProduct', 'Azure Sentinel')
+        kwargs['build'] = os.getenv('PyTenableUABuild', '0.0.1')
+        super().__init__(**kwargs)
+
+    @property
+    def exports(self):
+        return ExportsAPIExtended(self)
+
 
 class TenableStatus(Enum):
     finished = 'FINISHED'
